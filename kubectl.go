@@ -7,7 +7,7 @@ import (
 	"text/template"
 )
 
-func Apply(manifest string, params map[string]string) error {
+func Apply(manifest string, params interface{}) error {
 	tpl, err := template.New("template").Parse(manifest)
 	if err != nil {
 		return fmt.Errorf("Cannot perse template: %s", err)
@@ -25,7 +25,7 @@ func Apply(manifest string, params map[string]string) error {
 	return nil
 }
 
-func Delete(manifest string, params map[string]string) error {
+func Delete(manifest string, params interface{}) error {
 	tpl, err := template.New("template").Parse(manifest)
 	if err != nil {
 		return fmt.Errorf("Cannot perse template: %s", err)
@@ -44,11 +44,7 @@ func Delete(manifest string, params map[string]string) error {
 }
 
 func Exec(name string, namespace string, commands ...string) ([]byte, error) {
-	args := []string{
-		"exec",
-		name,
-		"-n=" + namespace,
-	}
+	args := []string{"exec", name, "-n", namespace}
 	for _, c := range commands {
 		args = append(args, c)
 	}
