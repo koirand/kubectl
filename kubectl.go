@@ -7,7 +7,21 @@ import (
 	"text/template"
 )
 
-func Apply(manifest string, params interface{}) error {
+type Client interface {
+	Apply(manifest string, params interface{}) error
+	Delete(manifest string, params interface{}) error
+	Exec(name string, namespace string, commands ...string) ([]byte, error)
+	Get(resource string, name string, namespace string) ([]byte, error)
+}
+
+type client struct {
+}
+
+func NewClient() Client {
+	return &client{}
+}
+
+func (c *client) Apply(manifest string, params interface{}) error {
 	tpl, err := template.New("template").Parse(manifest)
 	if err != nil {
 		return fmt.Errorf("Cannot perse template: %s", err)
@@ -25,7 +39,7 @@ func Apply(manifest string, params interface{}) error {
 	return nil
 }
 
-func Delete(manifest string, params interface{}) error {
+func (c *client) Delete(manifest string, params interface{}) error {
 	tpl, err := template.New("template").Parse(manifest)
 	if err != nil {
 		return fmt.Errorf("Cannot perse template: %s", err)
@@ -43,7 +57,7 @@ func Delete(manifest string, params interface{}) error {
 	return nil
 }
 
-func Exec(name string, namespace string, commands ...string) ([]byte, error) {
+func (c *client) Exec(name string, namespace string, commands ...string) ([]byte, error) {
 	args := []string{"exec", name, "-n", namespace}
 	for _, c := range commands {
 		args = append(args, c)
@@ -59,7 +73,7 @@ func Exec(name string, namespace string, commands ...string) ([]byte, error) {
 	return out, nil
 }
 
-func Get(resource string, name string, namespace string) ([]byte, error) {
+func (c *client) Get(resource string, name string, namespace string) ([]byte, error) {
 	var stderr bytes.Buffer
 	cmd := exec.Command("kubectl", "get", resource, name, "-n="+namespace, "-o", "json")
 	cmd.Stderr = &stderr

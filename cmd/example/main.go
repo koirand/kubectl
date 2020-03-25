@@ -27,8 +27,10 @@ type pod struct {
 }
 
 func main() {
+	k := kubectl.NewClient()
+
 	// Create pod
-	if err := kubectl.Apply(
+	if err := k.Apply(
 		manifest,
 		map[string]string{
 			"Name": "foo",
@@ -40,7 +42,7 @@ func main() {
 	// Wait for pod running
 	p := pod{}
 	for {
-		out, err := kubectl.Get("pod", "foo", "default")
+		out, err := k.Get("pod", "foo", "default")
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -55,7 +57,7 @@ func main() {
 	}
 
 	// Exec command
-	out, err := kubectl.Exec(
+	out, err := k.Exec(
 		"foo",
 		"default",
 		"echo",
@@ -68,7 +70,7 @@ func main() {
 	log.Println(strings.TrimSpace(string(out)))
 
 	// Delete pod
-	if err := kubectl.Delete(
+	if err := k.Delete(
 		manifest,
 		map[string]string{
 			"Name": "foo",

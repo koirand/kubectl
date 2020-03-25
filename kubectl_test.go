@@ -26,12 +26,13 @@ type pod struct {
 }
 
 func TestApply(t *testing.T) {
+	k := NewClient()
 	defer func() {
 		exec.Command("kubectl", "delete", "pod", "foo").Run()
 	}()
 
 	// Normal
-	if err := Apply(
+	if err := k.Apply(
 		manifest,
 		map[string]string{
 			"Name": "foo",
@@ -41,7 +42,7 @@ func TestApply(t *testing.T) {
 	}
 
 	// Error
-	if err := Apply(
+	if err := k.Apply(
 		manifest,
 		map[string]string{},
 	); err == nil {
@@ -50,11 +51,12 @@ func TestApply(t *testing.T) {
 }
 
 func TestDelete(t *testing.T) {
+	k := NewClient()
 	defer func() {
 		exec.Command("kubectl", "delete", "pod", "foo").Run()
 	}()
 
-	if err := Apply(
+	if err := k.Apply(
 		manifest,
 		map[string]string{
 			"Name": "foo",
@@ -64,7 +66,7 @@ func TestDelete(t *testing.T) {
 	}
 
 	// Error
-	if err := Apply(
+	if err := k.Apply(
 		manifest,
 		map[string]string{},
 	); err == nil {
@@ -72,7 +74,7 @@ func TestDelete(t *testing.T) {
 	}
 
 	// Normal
-	if err := Delete(
+	if err := k.Delete(
 		manifest,
 		map[string]string{
 			"Name": "foo",
@@ -83,11 +85,12 @@ func TestDelete(t *testing.T) {
 }
 
 func TestExec(t *testing.T) {
+	k := NewClient()
 	defer func() {
 		exec.Command("kubectl", "delete", "pod", "foo").Run()
 	}()
 
-	if err := Apply(
+	if err := k.Apply(
 		manifest,
 		map[string]string{
 			"Name": "foo",
@@ -99,7 +102,7 @@ func TestExec(t *testing.T) {
 	// Wait for pod running
 	p := pod{}
 	for {
-		out, err := Get("pod", "foo", "default")
+		out, err := k.Get("pod", "foo", "default")
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -113,7 +116,7 @@ func TestExec(t *testing.T) {
 	}
 
 	// Normal
-	out, err := Exec(
+	out, err := k.Exec(
 		"foo",
 		"default",
 		"echo",
@@ -128,7 +131,7 @@ func TestExec(t *testing.T) {
 	}
 
 	// Error
-	_, err = Exec(
+	_, err = k.Exec(
 		"foo",
 		"default",
 		"false",
@@ -139,11 +142,12 @@ func TestExec(t *testing.T) {
 }
 
 func TestGet(t *testing.T) {
+	k := NewClient()
 	defer func() {
 		exec.Command("kubectl", "delete", "pod", "foo").Run()
 	}()
 
-	if err := Apply(
+	if err := k.Apply(
 		manifest,
 		map[string]string{
 			"Name": "foo",
@@ -154,7 +158,7 @@ func TestGet(t *testing.T) {
 
 	// Normal
 	p := pod{}
-	out, err := Get("pod", "foo", "default")
+	out, err := k.Get("pod", "foo", "default")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -166,7 +170,7 @@ func TestGet(t *testing.T) {
 	}
 
 	// Error
-	_, err = Get("pod", "bar", "default")
+	_, err = k.Get("pod", "bar", "default")
 	if err == nil {
 		t.Fatal("Expected error but not")
 	}
