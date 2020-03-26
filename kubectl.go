@@ -12,6 +12,7 @@ type Client interface {
 	Delete(manifest string, params interface{}) error
 	Exec(name string, namespace string, commands ...string) ([]byte, error)
 	Get(resource string, name string, namespace string) ([]byte, error)
+	GetWithLabel(resource string, label string, namespace string) ([]byte, error)
 }
 
 type client struct {
@@ -76,6 +77,17 @@ func (c *client) Exec(name string, namespace string, commands ...string) ([]byte
 func (c *client) Get(resource string, name string, namespace string) ([]byte, error) {
 	var stderr bytes.Buffer
 	cmd := exec.Command("kubectl", "get", resource, name, "-n="+namespace, "-o", "json")
+	cmd.Stderr = &stderr
+	b, err := cmd.Output()
+	if err != nil {
+		return nil, fmt.Errorf("Cannot get resource: %s: %s", err, stderr.String())
+	}
+	return b, nil
+}
+
+func (c *client) GetWithLabel(resource string, label string, namespace string) ([]byte, error) {
+	var stderr bytes.Buffer
+	cmd := exec.Command("kubectl", "get", resource, "-l "+label, "-n="+namespace, "-o", "json")
 	cmd.Stderr = &stderr
 	b, err := cmd.Output()
 	if err != nil {

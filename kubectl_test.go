@@ -13,11 +13,17 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: {{ .Name }}
+  labels:
+    app: {{ .Name }}
 spec:
   containers:
     - name: nginx
       image: nginx:latest
 `
+
+type pods struct {
+	Items []pod `json:"items"`
+}
 
 type pod struct {
 	Status struct {
@@ -173,5 +179,46 @@ func TestGet(t *testing.T) {
 	_, err = k.Get("pod", "bar", "default")
 	if err == nil {
 		t.Fatal("Expected error but not")
+	}
+}
+
+func TestGetWithLabel(t *testing.T) {
+	k := NewClient()
+	defer func() {
+		exec.Command("kubectl", "delete", "pod", "foo").Run()
+	}()
+
+	if err := k.Apply(
+		manifest,
+		map[string]string{
+			"Name": "foo",
+		},
+	); err != nil {
+		t.Fatal(err)
+	}
+
+	// Normal
+	pods := pods{}
+	out, err := k.GetWithLabel("pod", "app=foo", "default")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := json.Unmarshal(out, &pods); err != nil {
+		t.Fatal(err)
+	}
+	if len(pods.Items) == 0 {
+		t.Fatal("Failed to get pods")
+	}
+
+	// Not Exist
+	out, err = k.GetWithLabel("pod", "app=bar", "default")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := json.Unmarshal(out, &pods); err != nil {
+		t.Fatal(err)
+	}
+	if len(pods.Items) != 0 {
+		t.Fatalf("Pods count is expected 0, but was %v", len(pods.Items))
 	}
 }
