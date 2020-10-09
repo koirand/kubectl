@@ -32,7 +32,7 @@ type pod struct {
 }
 
 func TestApply(t *testing.T) {
-	k := NewClient()
+	k := NewKubectl()
 	defer func() {
 		exec.Command("kubectl", "delete", "pod", "foo").Run()
 	}()
@@ -57,7 +57,7 @@ func TestApply(t *testing.T) {
 }
 
 func TestDelete(t *testing.T) {
-	k := NewClient()
+	k := NewKubectl()
 	defer func() {
 		exec.Command("kubectl", "delete", "pod", "foo").Run()
 	}()
@@ -91,7 +91,7 @@ func TestDelete(t *testing.T) {
 }
 
 func TestExec(t *testing.T) {
-	k := NewClient()
+	k := NewKubectl()
 	defer func() {
 		exec.Command("kubectl", "delete", "pod", "foo").Run()
 	}()
@@ -148,7 +148,7 @@ func TestExec(t *testing.T) {
 }
 
 func TestGetByName(t *testing.T) {
-	k := NewClient()
+	k := NewKubectl()
 	defer func() {
 		exec.Command("kubectl", "delete", "pod", "foo").Run()
 	}()
@@ -183,7 +183,7 @@ func TestGetByName(t *testing.T) {
 }
 
 func TestGetWithLabel(t *testing.T) {
-	k := NewClient()
+	k := NewKubectl()
 	defer func() {
 		exec.Command("kubectl", "delete", "pod", "foo").Run()
 	}()

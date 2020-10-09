@@ -7,7 +7,7 @@ import (
 	"text/template"
 )
 
-type Client interface {
+type Kubectl interface {
 	Apply(manifest string, params interface{}) error
 	Delete(manifest string, params interface{}) error
 	Exec(name string, namespace string, commands ...string) ([]byte, error)
@@ -15,14 +15,14 @@ type Client interface {
 	GetByLabel(resource string, label string, namespace string) ([]byte, error)
 }
 
-type client struct {
+type kubectl struct {
 }
 
-func NewClient() Client {
-	return &client{}
+func NewKubectl() Kubectl {
+	return &kubectl{}
 }
 
-func (c *client) Apply(manifest string, params interface{}) error {
+func (c *kubectl) Apply(manifest string, params interface{}) error {
 	tpl, err := template.New("template").Parse(manifest)
 	if err != nil {
 		return fmt.Errorf("Cannot perse template: %s", err)
@@ -40,7 +40,7 @@ func (c *client) Apply(manifest string, params interface{}) error {
 	return nil
 }
 
-func (c *client) Delete(manifest string, params interface{}) error {
+func (c *kubectl) Delete(manifest string, params interface{}) error {
 	tpl, err := template.New("template").Parse(manifest)
 	if err != nil {
 		return fmt.Errorf("Cannot perse template: %s", err)
@@ -58,7 +58,7 @@ func (c *client) Delete(manifest string, params interface{}) error {
 	return nil
 }
 
-func (c *client) Exec(name string, namespace string, commands ...string) ([]byte, error) {
+func (c *kubectl) Exec(name string, namespace string, commands ...string) ([]byte, error) {
 	args := []string{"exec", name, "-n", namespace}
 	for _, c := range commands {
 		args = append(args, c)
@@ -74,7 +74,7 @@ func (c *client) Exec(name string, namespace string, commands ...string) ([]byte
 	return out, nil
 }
 
-func (c *client) GetByName(resource string, name string, namespace string) ([]byte, error) {
+func (c *kubectl) GetByName(resource string, name string, namespace string) ([]byte, error) {
 	var stderr bytes.Buffer
 	cmd := exec.Command("kubectl", "get", resource, name, "-n="+namespace, "-o", "json")
 	cmd.Stderr = &stderr
@@ -85,7 +85,7 @@ func (c *client) GetByName(resource string, name string, namespace string) ([]by
 	return b, nil
 }
 
-func (c *client) GetByLabel(resource string, label string, namespace string) ([]byte, error) {
+func (c *kubectl) GetByLabel(resource string, label string, namespace string) ([]byte, error) {
 	var stderr bytes.Buffer
 	cmd := exec.Command("kubectl", "get", resource, "-l "+label, "-n="+namespace, "-o", "json")
 	cmd.Stderr = &stderr

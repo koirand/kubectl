@@ -27,7 +27,7 @@ type pod struct {
 }
 
 func main() {
-	k := kubectl.NewClient()
+	k := kubectl.NewKubectl()
 
 	// Create pod
 	if err := k.Apply(
