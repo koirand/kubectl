@@ -108,7 +108,7 @@ func TestExec(t *testing.T) {
 	// Wait for pod running
 	p := pod{}
 	for {
-		out, err := k.Get("pod", "foo", "default")
+		out, err := k.GetByName("pod", "foo", "default")
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -147,7 +147,7 @@ func TestExec(t *testing.T) {
 	}
 }
 
-func TestGet(t *testing.T) {
+func TestGetByName(t *testing.T) {
 	k := NewClient()
 	defer func() {
 		exec.Command("kubectl", "delete", "pod", "foo").Run()
@@ -164,7 +164,7 @@ func TestGet(t *testing.T) {
 
 	// Normal
 	p := pod{}
-	out, err := k.Get("pod", "foo", "default")
+	out, err := k.GetByName("pod", "foo", "default")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -176,7 +176,7 @@ func TestGet(t *testing.T) {
 	}
 
 	// Error
-	_, err = k.Get("pod", "bar", "default")
+	_, err = k.GetByName("pod", "bar", "default")
 	if err == nil {
 		t.Fatal("Expected error but not")
 	}
@@ -199,7 +199,7 @@ func TestGetWithLabel(t *testing.T) {
 
 	// Normal
 	pods := pods{}
-	out, err := k.GetWithLabel("pod", "app=foo", "default")
+	out, err := k.GetByLabel("pod", "app=foo", "default")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -211,7 +211,7 @@ func TestGetWithLabel(t *testing.T) {
 	}
 
 	// Not Exist
-	out, err = k.GetWithLabel("pod", "app=bar", "default")
+	out, err = k.GetByLabel("pod", "app=bar", "default")
 	if err != nil {
 		t.Fatal(err)
 	}

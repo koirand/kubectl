@@ -42,7 +42,7 @@ func main() {
 	// Wait for pod running
 	p := pod{}
 	for {
-		out, err := k.Get("pod", "foo", "default")
+		out, err := k.GetByName("pod", "foo", "default")
 		if err != nil {
 			log.Fatal(err)
 		}
