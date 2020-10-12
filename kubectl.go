@@ -8,8 +8,8 @@ import (
 )
 
 type Kubectl interface {
-	Apply(manifest string, params interface{}) error
-	Delete(manifest string, params interface{}) error
+	Apply(manifest string, params map[string]string) error
+	Delete(manifest string, params map[string]string) error
 	Exec(name string, namespace string, commands ...string) ([]byte, error)
 	GetByName(resource string, name string, namespace string) ([]byte, error)
 	GetByLabel(resource string, label string, namespace string) ([]byte, error)
@@ -22,7 +22,7 @@ func NewKubectl() Kubectl {
 	return &kubectl{}
 }
 
-func (c *kubectl) Apply(manifest string, params interface{}) error {
+func (c *kubectl) Apply(manifest string, params map[string]string) error {
 	tpl, err := template.New("template").Parse(manifest)
 	if err != nil {
 		return fmt.Errorf("Cannot perse template: %s", err)
@@ -40,7 +40,7 @@ func (c *kubectl) Apply(manifest string, params interface{}) error {
 	return nil
 }
 
-func (c *kubectl) Delete(manifest string, params interface{}) error {
+func (c *kubectl) Delete(manifest string, params map[string]string) error {
 	tpl, err := template.New("template").Parse(manifest)
 	if err != nil {
 		return fmt.Errorf("Cannot perse template: %s", err)
