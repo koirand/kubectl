@@ -1,4 +1,4 @@
-package kubectl
+package kubectl_test
 
 import (
 	"encoding/json"
@@ -6,6 +6,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/koirand/kubectl"
 )
 
 const replicasetManifest string = `
@@ -24,8 +26,8 @@ spec:
         app: {{ .Name }}
     spec:
       containers:
-      - name: nginx
-        image: nginx:latest
+        - name: nginx
+          image: nginx:latest
 `
 
 const podManifest string = `
@@ -58,7 +60,7 @@ type pod struct {
 }
 
 func TestApply(t *testing.T) {
-	k := NewKubectl()
+	k := kubectl.NewKubectl()
 	defer func() {
 		exec.Command("kubectl", "delete", "pod", "foo").Run()
 	}()
@@ -83,7 +85,7 @@ func TestApply(t *testing.T) {
 }
 
 func TestDelete(t *testing.T) {
-	k := NewKubectl()
+	k := kubectl.NewKubectl()
 	defer func() {
 		exec.Command("kubectl", "delete", "pod", "foo").Run()
 	}()
@@ -117,7 +119,7 @@ func TestDelete(t *testing.T) {
 }
 
 func TestPatch(t *testing.T) {
-	k := NewKubectl()
+	k := kubectl.NewKubectl()
 	defer func() {
 		exec.Command("kubectl", "delete", "replicaset", "foo").Run()
 	}()
@@ -151,7 +153,7 @@ func TestPatch(t *testing.T) {
 }
 
 func TestExec(t *testing.T) {
-	k := NewKubectl()
+	k := kubectl.NewKubectl()
 	defer func() {
 		exec.Command("kubectl", "delete", "pod", "foo").Run()
 	}()
@@ -208,7 +210,7 @@ func TestExec(t *testing.T) {
 }
 
 func TestGetByName(t *testing.T) {
-	k := NewKubectl()
+	k := kubectl.NewKubectl()
 	defer func() {
 		exec.Command("kubectl", "delete", "pod", "foo").Run()
 	}()
@@ -243,7 +245,7 @@ func TestGetByName(t *testing.T) {
 }
 
 func TestGetWithLabel(t *testing.T) {
-	k := NewKubectl()
+	k := kubectl.NewKubectl()
 	defer func() {
 		exec.Command("kubectl", "delete", "replicaset", "foo").Run()
 	}()
