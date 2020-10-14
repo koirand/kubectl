@@ -9,6 +9,7 @@ import (
 
 type Kubectl interface {
 	Apply(manifest string, params map[string]string) error
+	Patch(resource string, name string, patch string) error
 	Delete(manifest string, params map[string]string) error
 	Exec(name string, namespace string, commands ...string) ([]byte, error)
 	GetByName(resource string, name string, namespace string) ([]byte, error)
@@ -36,6 +37,16 @@ func (c *kubectl) Apply(manifest string, params map[string]string) error {
 	stdin.Close()
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("Cannot apply from manifest: %s: %s", err, stderr.String())
+	}
+	return nil
+}
+
+func (c *kubectl) Patch(resource string, name string, patch string) error {
+	var stderr bytes.Buffer
+	cmd := exec.Command("kubectl", "patch", resource, name, "--patch", patch)
+	cmd.Stderr = &stderr
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("Cannot patch: %s: %s", err, stderr.String())
 	}
 	return nil
 }
