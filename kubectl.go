@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"os/exec"
+	"strings"
 	"text/template"
 )
 
@@ -14,6 +15,7 @@ type Kubectl interface {
 	Exec(name string, namespace string, commands ...string) ([]byte, error)
 	GetByName(resource string, name string, namespace string) ([]byte, error)
 	GetByLabel(resource string, label string, namespace string) ([]byte, error)
+	DeleteByLabel(resources []string, label string, namespace string) error
 }
 
 type kubectl struct {
@@ -105,4 +107,16 @@ func (c *kubectl) GetByLabel(resource string, label string, namespace string) ([
 		return nil, fmt.Errorf("Cannot get resource: %s: %s", err, stderr.String())
 	}
 	return b, nil
+}
+
+func (c *kubectl) DeleteByLabel(resources []string, label string, namespace string) error {
+	resource := strings.Join(resources, ",")
+	var stderr bytes.Buffer
+	cmd := exec.Command("kubectl", "delete", resource, "-l "+label, "-n="+namespace)
+	cmd.Stderr = &stderr
+	_, err := cmd.Output()
+	if err != nil {
+		return fmt.Errorf("Cannot delete resource: %s: %s", err, stderr.String())
+	}
+	return nil
 }

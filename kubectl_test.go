@@ -15,15 +15,17 @@ apiVersion: apps/v1
 kind: ReplicaSet
 metadata:
   name: {{ .Name }}
+  labels:
+    app: {{ .App }}
 spec:
   selector:
     matchLabels:
-      app: {{ .Name }}
+      app: {{ .App }}
   replicas: 2
   template:
     metadata:
       labels:
-        app: {{ .Name }}
+        app: {{ .App }}
     spec:
       containers:
         - name: nginx
@@ -36,7 +38,7 @@ kind: Pod
 metadata:
   name: {{ .Name }}
   labels:
-    app: {{ .Name }}
+    app: {{ .App }}
 spec:
   containers:
     - name: nginx
@@ -70,6 +72,7 @@ func TestApply(t *testing.T) {
 		podManifest,
 		map[string]string{
 			"Name": "foo",
+			"App":  "bar",
 		},
 	); err != nil {
 		t.Fatal(err)
@@ -94,6 +97,7 @@ func TestDelete(t *testing.T) {
 		podManifest,
 		map[string]string{
 			"Name": "foo",
+			"App":  "foo",
 		},
 	); err != nil {
 		t.Fatal(err)
@@ -112,6 +116,7 @@ func TestDelete(t *testing.T) {
 		podManifest,
 		map[string]string{
 			"Name": "foo",
+			"App":  "bar",
 		},
 	); err != nil {
 		t.Fatal(err)
@@ -128,6 +133,7 @@ func TestPatch(t *testing.T) {
 		replicasetManifest,
 		map[string]string{
 			"Name": "foo",
+			"App":  "bar",
 		},
 	); err != nil {
 		t.Fatal(err)
@@ -162,6 +168,7 @@ func TestExec(t *testing.T) {
 		podManifest,
 		map[string]string{
 			"Name": "foo",
+			"App":  "bar",
 		},
 	); err != nil {
 		t.Fatal(err)
@@ -219,6 +226,7 @@ func TestGetByName(t *testing.T) {
 		podManifest,
 		map[string]string{
 			"Name": "foo",
+			"App":  "bar",
 		},
 	); err != nil {
 		t.Fatal(err)
@@ -244,7 +252,7 @@ func TestGetByName(t *testing.T) {
 	}
 }
 
-func TestGetWithLabel(t *testing.T) {
+func TestGetByLabel(t *testing.T) {
 	k := kubectl.NewKubectl()
 	defer func() {
 		exec.Command("kubectl", "delete", "replicaset", "foo").Run()
@@ -254,6 +262,7 @@ func TestGetWithLabel(t *testing.T) {
 		replicasetManifest,
 		map[string]string{
 			"Name": "foo",
+			"App":  "myapp",
 		},
 	); err != nil {
 		t.Fatal(err)
@@ -261,7 +270,7 @@ func TestGetWithLabel(t *testing.T) {
 
 	// Normal
 	pods := pods{}
-	out, err := k.GetByLabel("pod", "app=foo", "default")
+	out, err := k.GetByLabel("pod", "app=myapp", "default")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -282,5 +291,48 @@ func TestGetWithLabel(t *testing.T) {
 	}
 	if len(pods.Items) != 0 {
 		t.Fatalf("Pods count is expected 0, but was %v", len(pods.Items))
+	}
+}
+
+func TestDeleteByLabel(t *testing.T) {
+	k := kubectl.NewKubectl()
+	defer func() {
+		exec.Command("kubectl", "delete", "replicaset", "foo").Run()
+		exec.Command("kubectl", "delete", "pod", "bar").Run()
+	}()
+
+	if err := k.Apply(
+		replicasetManifest,
+		map[string]string{
+			"Name": "foo",
+			"App":  "myapp",
+		},
+	); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := k.Apply(
+		podManifest,
+		map[string]string{
+			"Name": "bar",
+			"App":  "myapp",
+		},
+	); err != nil {
+		t.Fatal(err)
+	}
+
+	// Invalid resource type
+	if err := k.DeleteByLabel([]string{"invalid"}, "app=myapp", "default"); err == nil {
+		t.Fatal("Expected error but not")
+	}
+
+	// Normal (Not exist)
+	if err := k.DeleteByLabel([]string{"replicaset", "pod"}, "app=notexist", "default"); err != nil {
+		t.Fatal(err)
+	}
+
+	// Normal
+	if err := k.DeleteByLabel([]string{"replicaset", "pod"}, "app=myapp", "default"); err != nil {
+		t.Fatal(err)
 	}
 }
