@@ -9,9 +9,9 @@ import (
 )
 
 type Kubectl interface {
-	Apply(manifest string, params map[string]string) error
+	Apply(manifest string, data interface{}) error
 	Patch(resource string, name string, patch string) error
-	Delete(manifest string, params map[string]string) error
+	Delete(manifest string, data interface{}) error
 	Exec(name string, namespace string, commands ...string) ([]byte, error)
 	GetByName(resource string, name string, namespace string) ([]byte, error)
 	GetByLabel(resource string, label string, namespace string) ([]byte, error)
@@ -25,7 +25,7 @@ func NewKubectl() Kubectl {
 	return &kubectl{}
 }
 
-func (c *kubectl) Apply(manifest string, params map[string]string) error {
+func (c *kubectl) Apply(manifest string, data interface{}) error {
 	tpl, err := template.New("template").Parse(manifest)
 	if err != nil {
 		return fmt.Errorf("Cannot perse template: %s", err)
@@ -35,7 +35,7 @@ func (c *kubectl) Apply(manifest string, params map[string]string) error {
 	cmd := exec.Command("kubectl", "apply", "-f", "-")
 	cmd.Stderr = &stderr
 	stdin, _ := cmd.StdinPipe()
-	tpl.Execute(stdin, params)
+	tpl.Execute(stdin, data)
 	stdin.Close()
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("Cannot apply from manifest: %s: %s", err, stderr.String())
@@ -53,7 +53,7 @@ func (c *kubectl) Patch(resource string, name string, patch string) error {
 	return nil
 }
 
-func (c *kubectl) Delete(manifest string, params map[string]string) error {
+func (c *kubectl) Delete(manifest string, data interface{}) error {
 	tpl, err := template.New("template").Parse(manifest)
 	if err != nil {
 		return fmt.Errorf("Cannot perse template: %s", err)
@@ -63,7 +63,7 @@ func (c *kubectl) Delete(manifest string, params map[string]string) error {
 	cmd := exec.Command("kubectl", "delete", "-f", "-")
 	cmd.Stderr = &stderr
 	stdin, _ := cmd.StdinPipe()
-	tpl.Execute(stdin, params)
+	tpl.Execute(stdin, data)
 	stdin.Close()
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("Cannot delete from manifest: %s: %s", err, stderr.String())
