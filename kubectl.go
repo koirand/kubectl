@@ -10,8 +10,8 @@ import (
 
 type Kubectl interface {
 	Apply(manifest string, data interface{}) error
-	Patch(resource string, name string, patch string) error
 	Delete(manifest string, data interface{}) error
+	Patch(resource string, name string, namespace string, patch string) error
 	Exec(name string, namespace string, commands ...string) ([]byte, error)
 	GetByName(resource string, name string, namespace string) ([]byte, error)
 	GetByLabel(resource string, label string, namespace string) ([]byte, error)
@@ -43,9 +43,9 @@ func (c *kubectl) Apply(manifest string, data interface{}) error {
 	return nil
 }
 
-func (c *kubectl) Patch(resource string, name string, patch string) error {
+func (c *kubectl) Patch(resource string, name string, namespace string, patch string) error {
 	var stderr bytes.Buffer
-	cmd := exec.Command("kubectl", "patch", resource, name, "--patch", patch)
+	cmd := exec.Command("kubectl", "patch", resource, name, "-n", namespace, "--patch", patch)
 	cmd.Stderr = &stderr
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("Cannot patch: %s: %s", err, stderr.String())

@@ -143,6 +143,7 @@ func TestPatch(t *testing.T) {
 	if err := k.Patch(
 		"replicaset",
 		"foo",
+		"default",
 		`{"spec":{"replicas":0}}`,
 	); err != nil {
 		t.Fatal(err)
@@ -152,6 +153,7 @@ func TestPatch(t *testing.T) {
 	if err := k.Patch(
 		"replicaset",
 		"invalid", // invalid name
+		"default",
 		`{"spec":{"replicas":0}}`,
 	); err == nil {
 		t.Fatal("Expected error but not")
